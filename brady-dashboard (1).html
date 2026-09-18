@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brady, Overrated? A Data Case</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#E8EAEC;
+  --surface:#FFFFFF;
+  --surface-2:#F1F2F4;
+  --border:#AEB4BD;
+  --text:#1B2430;
+  --text-muted:#5B6472;
+  --gold:#9C7220;
+  --teal:#1F8A76;
+  --brady:#2C57A8;
+  --rodgers:#2F8F52;
+  --mahomes:#C6432B;
+  --brees:#8A6D2D;
+  --manning:#1C86B0;
+  --shadow:0 1px 2px rgba(16,24,40,0.04), 0 2px 8px rgba(16,24,40,0.05);
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',system-ui,sans-serif;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  font-size:16px;
+}
+img{max-width:100%;}
+.wrap{max-width:1000px;margin:0 auto;padding:0 24px;}
+h1,h2,h3,h4{font-family:'Big Shoulders Display',sans-serif;font-weight:800;letter-spacing:0.01em;margin:0;line-height:1.05;}
+p{max-width:70ch;}
+a{color:var(--gold);}
+
+/* ---------- HERO ---------- */
+.hero{
+  position:relative;
+  padding:96px 0 64px;
+  border-bottom:1px solid var(--border);
+  overflow:hidden;
+}
+.hero::before{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 900px 500px at 12% -10%, rgba(156,114,32,0.14), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 100% 5%, rgba(31,138,118,0.10), transparent 60%);
+  pointer-events:none;
+}
+.hero-kicker{
+  color:var(--gold);
+  font-weight:700;
+  font-size:0.92rem;
+  margin-bottom:16px;
+  letter-spacing:0.02em;
+}
+.hero h1{
+  font-size:clamp(2.6rem,7.5vw,5.6rem);
+  color:var(--text);
+  position:relative;
+}
+.hero h1 em{font-style:normal;color:var(--gold);}
+.hero p.lede{
+  margin-top:20px;
+  font-size:1.12rem;
+  color:var(--text-muted);
+  max-width:62ch;
+  position:relative;
+}
+.hero-stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:20px 0;
+  margin-top:44px;
+  border-top:1px solid var(--border);
+  padding-top:26px;
+  position:relative;
+}
+.hero-stat{padding-right:16px;}
+.hero-stat .num{
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:800;
+  font-size:2.5rem;
+  color:var(--gold);
+  display:block;
+}
+.hero-stat .lbl{color:var(--text-muted);font-size:0.82rem;}
+
+/* ---------- NAV ---------- */
+nav.tabs{
+  position:sticky; top:0; z-index:50;
+  background:rgba(232,234,236,0.9);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border);
+}
+nav.tabs .wrap{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+nav.tabs .tab-links{display:flex; gap:2px; overflow-x:auto;}
+nav.tabs a.tab-link{
+  color:var(--text-muted);
+  text-decoration:none;
+  font-size:0.88rem;
+  font-weight:600;
+  padding:16px 16px;
+  white-space:nowrap;
+  border-bottom:2px solid transparent;
+  transition:color .15s, border-color .15s;
+}
+nav.tabs a.tab-link:hover{color:var(--text);}
+nav.tabs a.tab-link.active{color:var(--gold);border-bottom-color:var(--gold);}
+.portfolio-link{
+  font-family:'Inter',sans-serif; font-weight:600; font-size:0.82rem;
+  color:var(--text-muted); text-decoration:none; white-space:nowrap;
+  border:1px solid var(--border); border-radius:7px; padding:6px 12px;
+  flex-shrink:0;
+  transition:color .15s ease, border-color .15s ease;
+}
+.portfolio-link:hover{ color:var(--gold); border-color:var(--gold); }
+
+/* ---------- SECTIONS ---------- */
+section{padding:60px 0;border-bottom:1px solid var(--border);}
+section:last-of-type{border-bottom:none;}
+.section-head{margin-bottom:34px;}
+.section-head .eyebrow{color:var(--teal);font-weight:700;font-size:0.82rem;margin-bottom:10px;letter-spacing:0.02em;}
+.section-head h2{font-size:clamp(1.7rem,3.6vw,2.4rem);}
+.section-head p{color:var(--text-muted);margin-top:12px;font-size:1rem;}
+.subhead{margin:48px 0 24px;}
+.subhead h3{font-size:1.35rem;font-family:'Inter';font-weight:700;}
+.subhead p{color:var(--text-muted);font-size:0.92rem;margin-top:6px;}
+
+/* ---------- CARDS / GRID ---------- */
+.qb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:14px;margin-top:26px;}
+.qb-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;border-top:3px solid var(--qb-color,var(--gold));box-shadow:var(--shadow);}
+.qb-card h4{font-size:1.25rem;margin-bottom:2px;}
+.qb-card .sub{color:var(--text-muted);font-size:0.78rem;margin-bottom:14px;}
+.qb-card dl{margin:0;display:grid;gap:7px;}
+.qb-card .row{display:flex;justify-content:space-between;font-size:0.85rem;}
+.qb-card .row .k{color:var(--text-muted);}
+.qb-card .row .v{font-weight:700;font-variant-numeric:tabular-nums;}
+
+/* ---------- TABLE ---------- */
+.table-scroll{overflow-x:auto;margin-top:10px;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);}
+table{width:100%;border-collapse:collapse;font-size:0.87rem;min-width:640px;}
+th,td{padding:11px 14px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--surface);}
+thead th{background:var(--surface-2);color:var(--text-muted);font-weight:700;font-size:0.72rem;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);}
+tbody tr{border-bottom:1px solid var(--border);}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:nth-child(even){background:rgba(16,24,40,0.025);}
+td.name{font-weight:700;}
+tr.brady-row td.name{color:var(--brady);}
+tr.brady-row td:first-child{background:rgba(44,87,168,0.06);}
+tr.loss-row td.name{color:var(--mahomes);}
+tr.avg-row{border-top:2px solid var(--border);background:var(--surface-2)!important;}
+tr.avg-row td{font-weight:800;color:var(--text);}
+.result-pill{display:inline-block;min-width:20px;text-align:center;padding:2px 8px;border-radius:5px;font-weight:800;font-size:0.78rem;}
+.result-pill.win{background:rgba(31,138,118,0.15);color:var(--teal);}
+.result-pill.loss{background:rgba(198,67,43,0.15);color:var(--mahomes);}
+
+/* ---------- CHART CARD ---------- */
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 22px 20px;margin-top:22px;box-shadow:var(--shadow);}
+.chart-card h4{font-size:1.08rem;font-family:'Inter';font-weight:700;margin-bottom:2px;}
+.chart-card .note{color:var(--text-muted);font-size:0.8rem;margin-bottom:16px;}
+.chart-wrap{position:relative;height:320px;width:100%;}
+.chart-wrap.short{height:280px;}
+.chart-wrap canvas{width:100%!important;height:100%!important;}
+
+/* ---------- METRIC TOGGLE ---------- */
+.toggle-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.toggle-btn{background:var(--surface-2);border:1px solid var(--border);color:var(--text-muted);padding:7px 14px;border-radius:20px;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:'Inter';transition:all .12s;}
+.toggle-btn:hover{border-color:var(--gold);color:var(--text);}
+.toggle-btn.active{background:var(--gold);color:#1a1305;border-color:var(--gold);}
+
+/* ---------- TEAMMATES ---------- */
+.teammate-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:28px;}
+.teammate-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:var(--shadow);}
+.teammate-card .tm-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px;}
+.teammate-card h4{font-family:'Inter';font-weight:700;font-size:1.02rem;}
+.teammate-card .role{color:var(--text-muted);font-size:0.78rem;margin-bottom:10px;}
+.teammate-card p{font-size:0.87rem;color:var(--text);margin:0;max-width:none;}
+.tm-tag{flex-shrink:0;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+.tm-tag.HOF{background:rgba(156,114,32,0.15);color:var(--gold);}
+.tm-tag.Coach{background:rgba(28,134,176,0.15);color:var(--manning);}
+.tm-tag.Elite{background:rgba(31,138,118,0.15);color:var(--teal);}
+.tm-tag.Bucs{background:rgba(47,143,82,0.15);color:var(--rodgers);}
+
+/* ---------- LUCK METRICS ---------- */
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:28px;}
+.metric{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:10px;padding:18px;box-shadow:var(--shadow);}
+.metric .num{font-family:'Big Shoulders Display';font-size:2rem;font-weight:800;color:var(--gold);display:block;}
+.metric .txt{color:var(--text-muted);font-size:0.84rem;margin-top:4px;}
+
+/* ---------- TIMELINE ---------- */
+.timeline{margin-top:32px;position:relative;}
+.timeline::before{content:"";position:absolute;left:110px;top:6px;bottom:6px;width:2px;background:#14181F;}
+.tl-item{display:grid;grid-template-columns:96px 1fr;gap:24px;padding:18px 0;position:relative;}
+.tl-item:not(:last-child){border-bottom:1px solid var(--border);}
+.tl-year{font-family:'Big Shoulders Display';font-weight:800;font-size:1.45rem;color:var(--gold);text-align:right;padding-top:2px;}
+.tl-year .dot{position:absolute;left:106px;top:26px;width:9px;height:9px;border-radius:50%;background:var(--gold);border:2px solid var(--bg);}
+.tl-body h4{font-family:'Inter';font-weight:700;font-size:1.02rem;margin-bottom:2px;}
+.tl-body .score{color:var(--text-muted);font-size:0.83rem;margin-bottom:10px;}
+.tl-body ul{margin:0;padding-left:18px;color:var(--text);font-size:0.9rem;}
+.tl-body ul li{margin-bottom:5px;}
+.tl-body ul li::marker{color:var(--gold);}
+.tag{display:inline-block;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 8px;border-radius:20px;margin-left:8px;background:rgba(156,114,32,0.14);color:var(--gold);vertical-align:middle;}
+
+/* ---------- COUNTERPOINT ---------- */
+.counter{background:var(--surface-2);border:1px dashed var(--border);border-radius:12px;padding:20px 22px;margin-top:24px;}
+.counter h4{font-family:'Inter';font-weight:700;font-size:0.98rem;color:var(--teal);margin-bottom:8px;}
+.counter p{color:var(--text-muted);font-size:0.9rem;margin:0;}
+.rant{background:linear-gradient(135deg, rgba(156,114,32,0.08), rgba(198,67,43,0.05));border:1px solid var(--border);border-left:4px solid var(--mahomes);border-radius:12px;padding:22px 24px;margin-top:28px;box-shadow:var(--shadow);}
+.rant h4{font-family:'Big Shoulders Display';font-weight:800;font-size:1.3rem;color:var(--mahomes);margin-bottom:10px;letter-spacing:0.01em;}
+.rant p{color:var(--text);font-size:0.95rem;margin:0 0 10px 0;max-width:none;}
+.rant p:last-child{margin-bottom:0;}
+
+/* ---------- LEGEND CUSTOM ---------- */
+.legend-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:0.8rem;color:var(--text-muted);}
+.legend-row span{display:inline-flex;align-items:center;gap:6px;}
+.legend-row i{width:10px;height:10px;border-radius:3px;display:inline-block;}
+
+/* ---------- FOOTER / SOURCES ---------- */
+footer{padding:44px 0 80px;}
+.src-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:18px;}
+.src-grid a{display:block;color:var(--text-muted);text-decoration:none;font-size:0.84rem;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;}
+.src-grid a:hover{border-color:var(--gold);color:var(--text);}
+.disclaimer{margin-top:26px;color:var(--text-muted);font-size:0.8rem;border-top:1px solid var(--border);padding-top:18px;}
+
+@media(max-width:640px){
+  .hero{padding:64px 0 44px;}
+  .timeline::before{left:56px;}
+  .tl-item{grid-template-columns:50px 1fr;gap:14px;}
+  .tl-year{font-size:1rem;}
+  .tl-year .dot{left:53px;}
+  th,td{padding:8px 10px;font-size:0.78rem;}
+  .chart-wrap{height:260px;}
+  .portfolio-link{font-size:0.75rem;padding:5px 9px;}
+  nav.tabs a.tab-link{padding:14px 10px;}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-kicker">A STATISTICAL CASE FILE</div>
+    <h1>Why Tom Brady<br><em>is overrated</em></h1>
+    <p class="lede">Seven rings, every meaningful career passing record, and, according to twenty years of box scores, the luckiest playoff performer the league has ever seen. This dashboard measures Brady against his four closest rivals, then puts his postseason résumé under a microscope.</p>
+    <div class="hero-stats" id="heroStats"></div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="wrap">
+    <div class="tab-links">
+      <a href="#overview" class="tab-link">Overview</a>
+      <a href="#comparison" class="tab-link">Peer Comparison</a>
+      <a href="#luck" class="tab-link">The Luck Factor</a>
+      <a href="#sources" class="tab-link">Sources</a>
+    </div>
+    <a class="portfolio-link" href="https://jsk5892.github.io">&larr; Portfolio</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <!-- OVERVIEW -->
+  <section id="overview">
+    <div class="section-head">
+      <div class="eyebrow">01 · THE FIELD</div>
+      <h2>Five quarterbacks, one era</h2>
+      <p>Brady's prime overlapped almost exactly with four other Hall-of-Fame-caliber passers. Here's a side by side comparison.</p>
+    </div>
+    <div class="qb-grid" id="qbGrid"></div>
+
+    <div class="chart-card">
+      <h4>Career snapshot, side by side</h4>
+      <div class="note">Click a stat to switch what the bars show.</div>
+      <div class="toggle-row" id="careerToggle">
+        <button class="toggle-btn active" data-metric="yds">Passing yards</button>
+        <button class="toggle-btn" data-metric="td">TD passes</button>
+        <button class="toggle-btn" data-metric="rate">Passer rating</button>
+        <button class="toggle-btn" data-metric="sbw">Super Bowl wins</button>
+        <button class="toggle-btn" data-metric="int">Interceptions</button>
+        <button class="toggle-btn" data-metric="pow">Playoff wins</button>
+        <button class="toggle-btn" data-metric="mvp">MVP awards</button>
+      </div>
+      <div class="chart-wrap"><canvas id="careerBarChart"></canvas></div>
+    </div>
+  </section>
+
+  <!-- COMPARISON -->
+  <section id="comparison">
+    <div class="section-head">
+      <div class="eyebrow">02 · HEAD TO HEAD</div>
+      <h2>Career &amp; season trends</h2>
+      <p>Regular-season career totals, then how each quarterback's yardage and touchdowns tracked year over year.</p>
+    </div>
+
+    <div class="table-scroll">
+      <table id="careerTable"></table>
+    </div>
+    <div class="counter" style="margin-top:16px;">
+      <h4>The "1st-Team AP" column, worth sitting with</h4>
+      <p>That's Associated Press First-Team All-Pro, the annual vote by roughly 50 national media members for the single best player at each position that season. It's a different honor from MVP, and a stricter one: Brady was voted the outright best quarterback in the league in only 3 of his 23 seasons (2007, 2010, 2017). Manning did it 7 times, more than double Brady's total, and Rodgers did it 4. Even by the media and voters who covered him every week, Brady wasn't seen as the best quarterback in football in the other 20 seasons of his career.</p>
+    </div>
+
+    <div class="chart-card">
+      <h4>The Moss / Gronkowski effect</h4>
+      <div class="note">Brady's career splits cleanly into seasons with an elite pass-catcher (Randy Moss or Rob Gronkowski healthy and on the roster) and seasons without one.</div>
+      <div class="metric-grid" style="margin-top:0;">
+        <div class="metric"><span class="num">4,525 yds / 34.8 TD</span><span class="txt">average per season in the 13 seasons Brady had a healthy Moss or Gronkowski (2007, 2009–2018, 2020–2021)</span></div>
+        <div class="metric"><span class="num">3,789 yds / 24.5 TD</span><span class="txt">average per season in the 8 seasons he didn't (2001–2006, 2019, 2022), about 19% fewer yards and 42% fewer touchdowns per year</span></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h4>Passing yards by season</h4>
+      <div class="note">Calendar year of each season. Gaps reflect missed or negligible seasons (injury, backup duty, suspension). Click a name in the legend to hide/show that line.</div>
+      <div class="chart-wrap"><canvas id="yardsChart"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <h4>Touchdown passes by season</h4>
+      <div class="note">Same seasons as above, click legend items to isolate a passer.</div>
+      <div class="chart-wrap"><canvas id="tdChart"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <h4>Efficiency profile</h4>
+      <div class="note">Four rate stats, each normalized to a 0–100 scale across this group so the shapes are comparable. Bigger area ≠ automatically "better" on every axis, hover a point for the real number.</div>
+      <div class="chart-wrap"><canvas id="radarChart"></canvas></div>
+    </div>
+
+    <div class="subhead">
+      <h3>Postseason splits</h3>
+      <p>Brady's counting stats dominate the playoff and Super Bowl record books, largely because he's played in nearly twice as many postseason games as anyone else here, giving him a larger sample size.</p>
+    </div>
+    <div class="table-scroll">
+      <table id="playoffTable"></table>
+    </div>
+    <div class="table-scroll" style="margin-top:16px;">
+      <table id="sbTable"></table>
+    </div>
+
+    <div class="subhead">
+      <h3>Regular season vs. playoffs</h3>
+      <p>Every QB here but Mahomes regresses in passer rating. For being a so called "playoff riser" brady's TD's per game go down and INT's per game go up in the postseason.</p>
+    </div>
+    <div class="table-scroll">
+      <table id="splitsTable"></table>
+    </div>
+    <div class="counter" style="margin-top:16px;">
+      <h4>Reading the two columns</h4>
+      <p>Rating measures quality per throw, and it drops for Brady in the playoffs (97.2 to 89.8, down 7.6%), same direction as Brees and Manning, though not as steep. Yards per game measures total volume, and it actually rises for Brady in the postseason (267.9 to 279.2, up 4.2%), which makes sense: playoff games are closer and don't get out of hand the way some regular-season blowouts do, so there's more incentive to keep throwing deep into the fourth quarter. The one QB here who bucks the efficiency trend entirely is Mahomes, whose rating actually improves in the playoffs (up 6.5%), the only one of the five who does.</p>
+    </div>
+  </section>
+
+  <!-- LUCK -->
+  <section id="luck">
+    <div class="section-head">
+      <div class="eyebrow">03 · THE CENTRAL ARGUMENT</div>
+      <h2>The luck factor</h2>
+      <p>The source deck's core thesis: Brady got more help than any other QB in modern NFL history, elite defenses, top-10 field position for two decades, and a remarkable number of opponent mistakes at the worst possible time. None of this is a knock on Brady's own play nor is it something that he can control, it's an argument about how much of the credit belongs elsewhere.</p>
+    </div>
+
+    <div class="metric-grid" id="metricGrid"></div>
+
+    <div class="chart-card">
+      <h4>How much did the defense have to do?</h4>
+      <div class="note">Each opponent's regular-season scoring average vs. what Brady's defense actually allowed in that Super Bowl. Carolina was the only one of Brady's Super Bowl wins where they scored more in that game than their season average.</div>
+      <div class="chart-wrap"><canvas id="defenseChart"></canvas></div>
+    </div>
+
+    <div class="subhead">
+      <h3>The supporting cast</h3>
+      <p>Brady gets more credit than he deserves for the elite supporting cast around him.</p>
+    </div>
+    <div class="teammate-grid" id="teammateGrid"></div>
+
+    <div class="rant">
+      <h4> A quick rant about the Tampa Bay landing spot</h4>
+      <p>Brady didn't walk into a rebuild in 2020, he walked into a team that was already elite, they just needed a QB who wouldn't throw a historic number of picks. Todd Bowles took over as defensive coordinator in 2019, a full year before Brady ever put on a Bucs uniform, and that unit immediately became the NFL's best run defense that season, then repeated as the league's best run defense again in 2020. The 2019 Bucs went 7-9 despite Jameis Winston throwing 30 interceptions. They also lost 5 games that season by less than 6 points and 2 of those games were in overtime.</p>
+      <p>Now this first year Brady didn't even win his divison, as Tampa Bay went 11-5, which meant he had to open the playoffs on the road as a Wild Card team because New Orleans won the NFC South. Their reward: a trip to Washington, a 7-9 division winner that was the weakest team left in the field, playing in a stadium with zero fans in the stands due to COVID restrictions, silencing what should have been a hostile road environment. A first-round road game against a losing team with no crowd noise is about as close to a bye week as the playoffs get.</p>
+    </div>
+
+    <div class="subhead">
+      <h3>The AFC East advantage</h3>
+      <p>Brady's Patriots played in a joke of a division for twnenty years. While his AFC East rivals cycled through journeymen and busts year after year, New England got to beat them all up every year with no competition.</p>
+    </div>
+    <div class="metric-grid">
+      <div class="metric"><span class="num">17 of 18</span><span class="txt">seasons Brady started (2001–2019, excluding his 2008 injury year) that ended in an AFC East title, the only miss was 2002</span></div>
+      <div class="metric"><span class="num">33–3</span><span class="txt">Brady's career record against the Buffalo Bills alone, the most wins any starting QB has recorded against a single opponent</span></div>
+      <div class="metric"><span class="num">17 vs. 18</span><span class="txt">different starting quarterbacks the Bills and Dolphins each ran through trying to find their own version of stability, while Brady started for New England essentially every week for two decades</span></div>
+    </div>
+
+    <div class="subhead">
+      <h3>Automatic: the kicking game</h3>
+      <p>For nearly his entire Patriots tenure, Brady's kickers were as good as it gets. New England handed the job to Adam Vinatieri, then Stephen Gostkowski, and simply never had a bad year at the position, a luxury almost no other quarterback of his era enjoyed.</p>
+    </div>
+    <div class="metric-grid">
+      <div class="metric"><span class="num">81.9% → 87.4%</span><span class="txt">Vinatieri's (2000–2005), then Gostkowski's (2006–2019), regular-season field goal accuracy, two Hall-of-Fame-caliber kickers covering all 20 of Brady's Patriots seasons back to back</span></div>
+      <div class="metric"><span class="num">90% / 91.7%</span><span class="txt">Vinatieri's and Gostkowski's conversion rate specifically on "clutch" kicks (tying or go-ahead, final 3 minutes or overtime), both better than the league norm by a wide margin</span></div>
+      <div class="metric"><span class="num">2 misses, 2 wins</span><span class="txt">Opposing kickers missed potential game-tying or game-winning field goals against Brady's teams in the 2006 AFC Divisional Round (Nate Kaeding, 54 yards) and the 2011 AFC Championship (Billy Cundiff, 32 yards), both misses directly kept New England's season alive</span></div>
+      <div class="metric"><span class="num">76.8%</span><span class="txt">field goal percentage opponents made against New England from 2001–2019, the worst opposing-kicker accuracy allowed by any team in the league over that span. Meanwhile the Patriots' own kickers made 86.3% (+9.4 margin); no other team in the NFL was even at +4.0</span></div>
+    </div>
+
+    <div class="subhead">
+      <h3>The offensive line nobody talks about</h3>
+      <p>Brady's line was anchored by one of the most stable coaching setups in NFL history. Dante Scarnecchia ran New England's offensive line for effectively Brady's entire Patriots career, and the two seasons he wasn't there are the clearest example of incompetence in the unit during the whole dynasty.</p>
+    </div>
+    <div class="metric-grid">
+      <div class="metric"><span class="num">18 of 20</span><span class="txt">Brady's Patriots seasons that Dante Scarnecchia spent as offensive line coach (1999–2013, 2016–2019), anchored for years by Logan Mankins, Dan Koppen, and Matt Light in front of him. The two seasons he wasn't there, 2014–2015, are the only real gap</span></div>
+      <div class="metric"><span class="num">21 sacks</span><span class="txt">allowed during the 16–0 2007 regular season, 5th-fewest in the NFL, with Mankins, Light, and Koppen up front; Brady threw 50 touchdowns behind that line</span></div>
+      <div class="metric"><span class="num">The control group</span><span class="txt">Scarnecchia retired after 2013; the very next season the line allowed 40 sacks, then kept struggling in 2014 under a new coach before he was coaxed out of retirement in 2016, after which New England won two more Super Bowls</span></div>
+    </div>
+
+    <div class="subhead">
+      <h3>Marquee moments</h3>
+      <p>Twenty-one games of Brady playoff wins filed with absurd "luck", filter by game type.</p>
+    </div>
+
+    <div class="toggle-row" id="luckToggle">
+      <button class="toggle-btn active" data-filter="all">All moments (21)</button>
+      <button class="toggle-btn" data-filter="sb">Super Bowls</button>
+      <button class="toggle-btn" data-filter="ccg">Conference Championships</button>
+    </div>
+
+    <div class="timeline" id="timeline"></div>
+
+    <div class="counter">
+      <h4>For balance</h4>
+      <p>The luck wasn't always just for Brady as in 2007 the Asante Samuel dropped interception instantly followed up by the "helmet catch" (David Tyree, Super Bowl XLII) is the signature unlucky moment of his career, costing New England a perfect season. Brady's teams also lost 11 playoff games. The argument here is about frequency and degree of lucky moments that happen to him, out of his own control.</p>
+    </div>
+
+    <div class="subhead">
+      <h3>Every other playoff start</h3>
+      <p>Outside the marquee games above, here's charting for Brady's complete game-by-game line in his remaining 26 playoff appearances: round, result, score, QBR, yards, touchdowns and interceptions, plus a per-game average across all 26. Eleven of these were losses; the deck's original framing was specifically about the games <em style="color:var(--text)">not</em> included in that "marquee moments" list.</p>
+    </div>
+    <div class="table-scroll">
+      <table id="otherGamesTable"></table>
+    </div>
+  </section>
+
+  <!-- SOURCES -->
+  <section id="sources">
+    <div class="section-head">
+      <div class="eyebrow">04 · METHODOLOGY</div>
+      <h2>Where the numbers come from</h2>
+      <p>Base research and the full "luck" narrative came from my own source Google Slides deck ("Why Tom Brady is OVERRATED"). Every career total, season line, and peer stat on this page was cross-checked against the public sources below. Tom Brady sucks.</p>
+    </div>
+    <div class="src-grid">
+      <a href="https://www.pro-football-reference.com/players/B/BradTo00.htm" target="_blank">Pro Football Reference, Player Pages</a>
+      <a href="https://www.nfl.com/players/tom-brady/stats/career" target="_blank">NFL.com, Career Stats</a>
+      <a href="https://www.espn.com" target="_blank">ESPN, Player Season Logs</a>
+      <a href="https://www.si.com/nfl" target="_blank">Sports Illustrated, Playoff/SB Splits</a>
+      <a href="https://www.chiefs.com" target="_blank">Team Sites, Mahomes/Bucs Records</a>
+    </div>
+    <div class="disclaimer">
+      Stats current as of research date (September 2026). Aaron Rodgers and Patrick Mahomes are active players; their career and playoff totals will keep growing. Peyton Manning's field-position table from the source deck was excluded here for the same reason; the career averages Brady 8.7 / Rodgers 11.7 / Brees 16.7 / Manning 20.2 (average NFL rank of starting field position) are reproduced from the deck as stated. Isn't this all so crazy.
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* ============ DATA ============ */
+
+const QBS = {
+  brady:   { name:"Tom Brady",       color:"#2C57A8", teams:"NE 2000–19, TB 2020–22" },
+  rodgers: { name:"Aaron Rodgers",   color:"#2F8F52", teams:"GB 2005–22, NYJ 23–24, PIT 25–" },
+  mahomes: { name:"Patrick Mahomes", color:"#C6432B", teams:"KC 2017–" },
+  brees:   { name:"Drew Brees",      color:"#8A6D2D", teams:"SD 2001–05, NO 2006–20" },
+  manning: { name:"Peyton Manning",  color:"#1C86B0", teams:"IND 1998–2011, DEN 2012–15" }
+};
+
+const CAREER = {
+  brady:   {comp:"64.3%", yds:89214, td:649, int:212, rate:97.2, wins:"251–82", mvp:3, sb:"7–3", sbw:7, sbmvp:5, ap1:3},
+  rodgers: {comp:"65.1%", yds:66274, td:527, int:123, rate:102.2, wins:"active", mvp:4, sb:"1–0", sbw:1, sbmvp:1, ap1:4},
+  mahomes: {comp:"66.2%", yds:35939, td:267, int:85,  rate:100.8, wins:"95–31", mvp:2, sb:"3–2", sbw:3, sbmvp:3, ap1:2},
+  brees:   {comp:"67.7%", yds:80358, td:571, int:243, rate:98.7, wins:"127–114", mvp:0, sb:"1–0", sbw:1, sbmvp:1, ap1:1},
+  manning: {comp:"65.3%", yds:71940, td:539, int:251, rate:96.5, wins:"186–79", mvp:5, sb:"2–2", sbw:2, sbmvp:1, ap1:7}
+};
+
+const PLAYOFF = {
+  brady:   {rec:"35–13", g:48, comp:"62.5%", yds:13400, td:88, int:40, rate:89.8},
+  rodgers: {rec:"11–10", g:22, comp:"64.5%", yds:5894, td:45, int:13, rate:100.1},
+  mahomes: {rec:"17–4",  g:21, comp:"66.5%", yds:5814, td:46, int:10, rate:107.4},
+  brees:   {rec:"9–9",   g:18, comp:"66.7%", yds:5366, td:37, int:15, rate:88.2},
+  manning: {rec:"14–13", g:27, comp:"61.4%", yds:7339, td:40, int:25, rate:87.4}
+};
+
+const SB = {
+  brady:   {apps:10, rec:"7–3", mvp:5, rate:97.7, ypatt:7.2, comp:"65.8%"},
+  rodgers: {apps:1,  rec:"1–0", mvp:1, rate:111.5, ypatt:7.8, comp:"61.5%"},
+  mahomes: {apps:5,  rec:"3–2", mvp:3, rate:85.2, ypatt:6.3, comp:"63.6%"},
+  brees:   {apps:1,  rec:"1–0", mvp:1, rate:113.1, ypatt:8.0, comp:"82.1%"},
+  manning: {apps:4,  rec:"2–2", mvp:1, rate:79.9, ypatt:5.9, comp:"63.5%"}
+};
+
+// season-by-season: [year, passYds, passTD]
+const SEASONS = {
+  brady:[[2001,2843,18],[2002,3764,28],[2003,3620,23],[2004,3692,28],[2005,4110,26],[2006,3529,24],
+    [2007,4806,50],[2009,4398,28],[2010,3900,36],[2011,5235,39],[2012,4827,34],[2013,4343,25],
+    [2014,4109,33],[2015,4770,36],[2016,3554,28],[2017,4577,32],[2018,4355,29],[2019,4057,24],
+    [2020,4633,40],[2021,5316,43],[2022,4694,25]],
+  rodgers:[[2008,4038,28],[2009,4434,30],[2010,3922,28],[2011,4643,45],[2012,4295,39],[2013,2536,17],
+    [2014,4381,38],[2015,3821,31],[2016,4428,40],[2017,1675,16],[2018,4442,25],[2019,4002,26],
+    [2020,4299,48],[2021,4115,37],[2022,3695,26],[2024,3897,28],[2025,3322,24]],
+  mahomes:[[2018,5097,50],[2019,4031,26],[2020,4740,38],[2021,4839,37],[2022,5250,41],
+    [2023,4183,27],[2024,3928,26],[2025,3587,21]],
+  brees:[[2001,221,1],[2002,3284,17],[2003,2108,11],[2004,3159,27],[2005,3576,24],[2006,4418,26],
+    [2007,4423,28],[2008,5069,34],[2009,4388,34],[2010,4620,33],[2011,5476,46],[2012,5177,43],
+    [2013,5162,39],[2014,4952,33],[2015,4870,32],[2016,5208,37],[2017,4334,23],[2018,3992,32],
+    [2019,2979,27],[2020,2942,24]],
+  manning:[[1998,3739,26],[1999,4135,26],[2000,4413,33],[2001,4131,26],[2002,4200,27],[2003,4267,29],
+    [2004,4557,49],[2005,3747,28],[2006,4397,31],[2007,4040,31],[2008,4002,27],[2009,4500,33],
+    [2010,4700,33],[2012,4659,37],[2013,5477,55],[2014,4727,39],[2015,2249,9]]
+};
+
+// Radar metrics normalized later. Raw values: [Comp%, Rating(reg), Playoff Rating, TD:INT ratio]
+const RADAR_RAW = {
+  brady:   [64.3, 97.2, 89.8, 649/212],
+  rodgers: [65.1, 102.2, 100.1, 527/123],
+  mahomes: [66.2, 100.8, 107.4, 267/85],
+  brees:   [67.7, 98.7, 88.2, 571/243],
+  manning: [65.3, 96.5, 87.4, 539/251]
+};
+const RADAR_LABELS = ["Completion %","Reg. Season Rating","Playoff Rating","TD:INT Ratio"];
+
+const HERO_STATS = [
+  ["7","Super Bowl rings"],["649","Career passing TDs"],["251","Regular season wins"],
+  ["35–13","Playoff record"],["23","Seasons played"]
+];
+
+const LUCK_METRICS = [
+  ["16/23","seasons with a top-10 scoring defense behind him, including 2021 with Tampa Bay (5th); 2022 (13th) was the exception"],
+  ["15/20","seasons (2001–2020) with top-10 average starting field position, per the source deck; that specific stat wasn't publicly trackable for his final 2 Tampa seasons to extend the count"],
+  ["10.7 pts","average margin by which his defense held opponents below their season scoring average, across his 7 Super Bowl wins"],
+  ["12 pts","total allowed by his defense on 22 possessions across his final two Super Bowl wins (SB LI, LIII)"],
+  ["2 of 27","Super Bowl teams in history that won after their offense scored 13 points or fewer. Every other team in that spot went 0–25; both wins belong to Brady (SB XXXVI, SB LIII)"],
+  ["7.4 yds","average length of Brady's 21 career Super Bowl touchdown passes, well below his own career average (16.8 yards) for a regular-season TD throw"],
+  ["2","Conference Championship wins despite Brady throwing 3 interceptions in the game"],
+  ["3–1 / 7–4","Brady's playoff record in games where he threw exactly 3 interceptions, and in games where he threw exactly 2, respectively; he still won more often than not even while turning the ball over"],
+  ["11–5","New England's record in 2008 with Brady out for the season (torn ACL, Week 1) and Matt Cassel, who hadn't started a game since high school, under center. They missed the playoffs only on a tiebreaker."],
+  ["22","teammates who earned First-Team All-Pro honors while on his Patriots or Buccaneers rosters, per Pro Football Reference (Gronkowski, Seymour, Welker, Wilfork, Gilmore, Mankins, Revis, Vinatieri, Wirfs, and 13 others), before even counting the head coach"]
+];
+
+// Defense-support chart data: [label, opponent season ppg, points allowed in that SB]
+const DEFENSE_CHART_DATA = [
+  {label:"SB XXXVI\nvs Rams", seasonAvg:32.1, allowed:17},
+  {label:"SB XXXIX\nvs Eagles", seasonAvg:24.1, allowed:21},
+  {label:"SB LI\nvs Falcons (off. only)", seasonAvg:33.8, allowed:21},
+  {label:"SB LIII\nvs Rams", seasonAvg:32.4, allowed:3},
+  {label:"SB LV\nvs Chiefs", seasonAvg:29.6, allowed:9}
+];
+
+const TEAMMATES = [
+  {name:"Bill Belichick", role:"Head Coach", years:"2000–2019", tag:"Coach",
+    note:"6 Super Bowl wins together; widely described as the greatest defensive mind and program-builder the league has seen."},
+  {name:"Randy Moss", role:"WR", years:"2007–2010", tag:"HOF",
+    note:"Set the single-season TD reception record (23) catching passes from Brady in 2007. Pro Football Hall of Fame, 2018."},
+  {name:"Ty Law", role:"CB", years:"2000–2004", tag:"HOF",
+    note:"3-time Super Bowl champion; picked off Peyton Manning 3 times in the 2003 AFC Championship. Pro Football Hall of Fame, 2019."},
+  {name:"Deion Branch", role:"WR", years:"2002–2005, 2010–2012", tag:"Elite",
+    note:"Super Bowl XXXIX MVP, 11 catches for 133 yards, tying the Super Bowl receptions record, in a game where he never scored a touchdown."},
+  {name:"Richard Seymour", role:"DE", years:"2001–2008", tag:"HOF",
+    note:"Anchor of the early-2000s title defenses; 7-time Pro Bowler. Pro Football Hall of Fame, 2022."},
+  {name:"Junior Seau", role:"LB", years:"2006–2009", tag:"HOF",
+    note:"Future Hall of Fame veteran who joined the roster during two of Brady's title-window seasons. Pro Football Hall of Fame, 2015."},
+  {name:"Rob Gronkowski", role:"TE", years:"2010–2018, 2020–2021", tag:"Elite",
+    note:"Widely regarded as the best tight end the position has produced; part of 4 of Brady's Super Bowl wins across two teams."},
+  {name:"Julian Edelman", role:"WR", years:"2009–2020", tag:"Elite",
+    note:"Super Bowl LIII MVP; Brady's most trusted possession receiver for over a decade."},
+  {name:"Wes Welker", role:"WR", years:"2007–2012", tag:"Elite",
+    note:"Led the NFL in receptions 3 times as Brady's primary slot target."},
+  {name:"Vince Wilfork", role:"NT", years:"2004–2014", tag:"Elite",
+    note:"2-time Super Bowl champion; anchored the defensive line for a decade."},
+  {name:"Stephon Gilmore", role:"CB", years:"2017–2021", tag:"Elite",
+    note:"2019 NFL Defensive Player of the Year; came up with a clinching interception in Super Bowl LIII and a huge pick in the 2017 AFC Championship."},
+  {name:"Mike Evans & Chris Godwin", role:"WR", years:"2020–2022", tag:"Bucs",
+    note:"Both 1,000-yard, Pro Bowl-caliber receivers who helped deliver a title in Brady's very first Tampa Bay season."}
+];
+
+const TIMELINE = [
+  {year:2002, tag:"other", title:"Divisional vs. Raiders", score:"W 16–13 (OT)",
+    points:["Defense held the No. 4 offense to 13 points across 12 possessions.",
+    "The \"Tuck Rule\": Charles Woodson's game-sealing strip was overturned on review with under 2 minutes left, ruled an incomplete pass.",
+    "Adam Vinatieri's 45-yard field goal in heavy snow forced overtime; the Patriots won it there."]},
+  {year:2002, tag:"ccg", title:"AFC Championship vs. Steelers", score:"W 24–17",
+    points:["Brady's offense scored zero points on its first five drives; New England led anyway thanks to a punt-return touchdown.",
+    "Drew Bledsoe relieved an injured Brady and threw a touchdown on his very first drive.",
+    "Jerome Bettis was held to 8 yards on 9 carries; Pittsburgh also had a field goal blocked and returned for a touchdown."]},
+  {year:2002, tag:"sb", title:"Super Bowl XXXVI vs. Rams", score:"W 20–17",
+    points:["Defense held the NFL's No. 1 offense, averaging 32.1 ppg over its prior 18 games, to 17 points and a pick-six.",
+    "New England's offense scored just 13 points; MVP Kurt Warner threw 2 interceptions.",
+    "Vinatieri's 48-yard field goal on the final play won it."]},
+  {year:2004, tag:"other", title:"Divisional vs. Titans", score:"W 17–14",
+    points:["Defense held the No. 5 offense and co-MVP Steve McNair to 14 points on 9 possessions.",
+    "Vinatieri's 46-yard game-winner came with temperatures below 10°F.",
+    "Tennessee's Drew Bennett dropped a potential go-ahead deep pass with 90 seconds left."]},
+  {year:2004, tag:"ccg", title:"AFC Championship vs. Colts", score:"W 24–14",
+    points:["Defense held the No. 3 offense and co-MVP Peyton Manning to 14 points, forcing 5 turnovers.",
+    "Manning threw 4 interceptions, by most accounts the worst playoff game of his career."]},
+  {year:2004, tag:"sb", title:"Super Bowl XXXVIII vs. Panthers", score:"W 32–29",
+    points:["Carolina's John Kasay kicked the ball out of bounds with just over a minute left, handing New England a short field.",
+    "Vinatieri's 41-yard field goal won it with 4 seconds remaining."]},
+  {year:2005, tag:"other", title:"Divisional vs. Colts", score:"W 20–3",
+    points:["Defense held the No. 1 offense to 3 points and forced 2 fumbles.",
+    "Manning finished with 0 touchdowns and an interception."]},
+  {year:2005, tag:"sb", title:"Super Bowl XXXIX vs. Eagles", score:"W 24–21",
+    points:["Pro Bowl RB Brian Westbrook managed just 44 yards on 15 carries, 22 of those on a single play.",
+    "New England's first 5 drives produced 4 punts and a fumble; the defense allowed only one touchdown.",
+    "Both Brady touchdown passes traveled 4 yards or fewer."]},
+  {year:2007, tag:"other", title:"Divisional vs. Chargers", score:"W 24–21",
+    points:["Marlon McCree intercepted Brady, then fumbled the ball right back to New England.",
+    "San Diego's Nate Kaeding missed a 54-yard field goal that would have tied the game.",
+    "Brady himself threw 3 interceptions in the win."]},
+  {year:2008, tag:"ccg", title:"AFC Championship vs. Chargers", score:"W 21–12",
+    points:["Philip Rivers played on a torn ACL suffered six days earlier and threw 2 interceptions.",
+    "LaDainian Tomlinson re-aggravated his knee on his first carry and played only 3 snaps.",
+    "Brady threw 3 interceptions and posted a 66.4 rating, yet still won comfortably."]},
+  {year:2012, tag:"ccg", title:"AFC Championship vs. Ravens", score:"W 23–20",
+    points:["Brady threw 2 interceptions and zero touchdowns, outplayed for most of the night by Joe Flacco.",
+    "Baltimore's Lee Evans dropped a game-winning touchdown with 27 seconds left; two plays later, Billy Cundiff missed a 32-yard tying field goal.",
+    "Cundiff later said he rushed the kick because Gillette Stadium's own scoreboard incorrectly displayed the down, confirmed by a league review."]},
+  {year:2014, tag:"other", title:"Divisional vs. Colts", score:"W 43–22",
+    points:["Defense forced 4 interceptions from Andrew Luck.",
+    "LeGarrette Blount ran for 166 yards and 4 touchdowns as the ground game did the heavy lifting.",
+    "\"Deflategate\" originated from this game; the resulting controversy centered more on Brady's cooperation with the investigation than any competitive impact."]},
+  {year:2015, tag:"sb", title:"Super Bowl XLIX vs. Seahawks", score:"W 28–24",
+    points:["Seattle's vaunted defense played through injuries to Earl Thomas, Richard Sherman, and Kam Chancellor.",
+    "The Seahawks had the NFL's No. 1 rushing offense (20 rushing TDs, 400+ yards more than 2nd place) but threw from the 1-yard line, intercepted by Malcolm Butler to end the game."]},
+  {year:2017, tag:"other", title:"Divisional vs. Texans", score:"W 34–16",
+    points:["Brady threw 2 interceptions of his own but still won comfortably.",
+    "Dion Lewis's 98-yard kickoff return touchdown was a decisive special-teams swing."]},
+  {year:2017, tag:"sb", title:"Super Bowl LI vs. Falcons", score:"W 34–28 (OT)",
+    points:["Atlanta, the NFL's No. 1 offense, managed only 21 offensive points despite two red-zone possessions inside the final 4 minutes of regulation.",
+    "A would-be Julian Edelman interception instead became a diving catch that kept a scoring drive alive.",
+    "New England won the overtime coin toss and scored on the opening possession."]},
+  {year:2018, tag:"ccg", title:"AFC Championship vs. Jaguars", score:"W 24–20",
+    points:["A Myles Jack fumble recovery that would have given Jacksonville a 17-point 4th-quarter lead was ruled down by contact, a call later acknowledged as incorrect.",
+    "Jacksonville abandoned the man coverage that had shut Brady down all game in favor of zone looks in the 4th quarter, and Brady torched it for 158 yards."]},
+  {year:2019, tag:"ccg", title:"AFC Championship vs. Chiefs", score:"W 37–31 (OT)",
+    points:["A 3rd Brady interception was wiped out by a Chiefs defender lining up offside on the play.",
+    "A Julian Edelman muffed punt was overturned on replay with limited clear evidence.",
+    "New England won the overtime coin toss under the old sudden-death rules."]},
+  {year:2019, tag:"sb", title:"Super Bowl LIII vs. Rams", score:"W 13–3",
+    points:["Defense held the No. 2 offense, 32.4 ppg over its prior 18 games, to just 3 points across 12 drives.",
+    "Brady's own line: 1 interception, 0 touchdowns, on a night his defense carried the game entirely."]},
+  {year:2021, tag:"other", title:"Divisional vs. Saints", score:"W 30–20",
+    points:["Drew Brees played through 11 fractured ribs and a collapsed lung, throwing 3 interceptions.",
+    "All three Brady touchdown drives started inside New Orleans' 40-yard line."]},
+  {year:2021, tag:"ccg", title:"NFC Championship vs. Packers", score:"W 31–26",
+    points:["Aaron Rodgers was pressured on 43% of his dropbacks (a season-high) and sacked 5 times; Brady was sacked once.",
+    "Brady threw 3 interceptions; one Packers drop (Chandon Sullivan) and a Scotty Miller touchdown before half swung momentum back."]},
+  {year:2021, tag:"sb", title:"Super Bowl LV vs. Chiefs", score:"W 31–9",
+    points:["Kansas City started backup tackles on both sides and Mahomes was pressured on 29 of 56 dropbacks; Brady was pressured on just 4 of 30.",
+    "A Tyrann Mathieu interception was negated by penalty, and Kansas City lined up offside on a 4th-down field goal try, extending a Tampa Bay scoring drive."]}
+];
+
+const OTHER_GAMES = {
+  games:["2004 vs PIT","2005 vs JAX","2005 vs DEN","2006 vs NYJ","2006 vs IND","2007 vs JAX","2007 vs NYG",
+    "2010 vs NYJ","2011 vs DEN","2011 vs NYG","2012 vs HOU","2012 vs BAL","2013 vs IND","2013 vs DEN",
+    "2014 vs BAL","2014 vs IND","2015 vs KC","2015 vs DEN","2016 vs PIT","2017 vs TEN","2018 vs LAC",
+    "2019 vs TEN","2020 vs WAS","2021 vs PHI","2021 vs LAR","2022 vs DAL"],
+  round:["AFC Champ.","Wild Card","Divisional","Wild Card","AFC Champ.","Divisional","Super Bowl XLII",
+    "Divisional","Divisional","Super Bowl XLVI","Divisional","AFC Champ.","Divisional","AFC Champ.",
+    "Divisional","AFC Champ.","Divisional","AFC Champ.","AFC Champ.","Divisional","Divisional",
+    "Wild Card","Wild Card","Wild Card","Divisional","Wild Card"],
+  result:["W","W","L","W","L","W","L","L","W","L","W","L","W","L","W","W","W","L","W","W","W","L","W","W","L","L"],
+  score:["41–27","28–3","27–13","37–16","38–34","31–20","17–14","28–21","45–10","21–17","41–28","28–13",
+    "43–22","26–16","35–31","45–7","27–20","20–18","36–17","35–14","41–28","20–13","31–23","31–15","30–27","31–14"],
+  qbr:[66.67,55.56,55.56,64.71,61.76,92.86,60.42,64.44,76.47,65.85,62.50,53.70,52.00,63.16,66.00,65.71,
+    66.67,48.21,76.19,66.04,77.27,54.05,55.00,78.38,55.56,53.03],
+  yds:[207,201,341,212,232,262,266,299,363,276,344,320,198,277,367,226,302,310,384,337,343,209,381,271,329,351],
+  td:[2,3,1,2,1,3,1,2,6,2,3,1,0,1,3,3,2,1,3,3,1,0,2,2,1,2],
+  int:[0,0,2,0,1,0,0,1,1,1,0,2,0,0,1,1,0,2,0,0,0,1,0,0,1,1]
+};
+function sum(arr){ return arr.reduce((a,b)=>a+b,0); }
+function avg(arr){ return sum(arr)/arr.length; }
+const OG_WINS = OTHER_GAMES.result.filter(r=>r==='W').length;
+const OG_LOSSES = OTHER_GAMES.result.filter(r=>r==='L').length;
+
+/* ============ RENDER: text / tables ============ */
+
+function el(tag, cls, html){const e=document.createElement(tag); if(cls)e.className=cls; if(html!==undefined)e.innerHTML=html; return e;}
+
+const heroStatsEl = document.getElementById('heroStats');
+HERO_STATS.forEach(([num,lbl])=>{
+  heroStatsEl.appendChild(el('div','hero-stat', `<span class="num">${num}</span><span class="lbl">${lbl}</span>`));
+});
+
+const qbGrid = document.getElementById('qbGrid');
+Object.keys(QBS).forEach(k=>{
+  const q = QBS[k], c = CAREER[k];
+  const card = el('div','qb-card');
+  card.style.setProperty('--qb-color', q.color);
+  card.innerHTML = `
+    <h4 style="color:${q.color}">${q.name}</h4>
+    <div class="sub">${q.teams}</div>
+    <dl>
+      <div class="row"><span class="k">Yards</span><span class="v">${c.yds.toLocaleString()}</span></div>
+      <div class="row"><span class="k">TD–INT</span><span class="v">${c.td}–${c.int}</span></div>
+      <div class="row"><span class="k">Rating</span><span class="v">${c.rate}</span></div>
+      <div class="row"><span class="k">MVPs</span><span class="v">${c.mvp}</span></div>
+      <div class="row"><span class="k">SB Record</span><span class="v">${c.sb}</span></div>
+    </dl>`;
+  qbGrid.appendChild(card);
+});
+
+function buildTable(id, headers, rows){
+  const t = document.getElementById(id);
+  const thead = '<thead><tr>'+headers.map(h=>`<th>${h}</th>`).join('')+'</tr></thead>';
+  const tbody = '<tbody>'+rows.map(r=>`<tr class="${r.cls||''}"><td class="name">${r.name}</td>${r.cells.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')+'</tbody>';
+  t.innerHTML = thead+tbody;
+}
+
+buildTable('careerTable', ['Quarterback','Comp%','Yards','TD','INT','Rating','MVPs','1st-Team AP','SB Record','SB MVPs'],
+  Object.keys(QBS).map(k=>{
+    const q=QBS[k], c=CAREER[k];
+    return {name:q.name, cls:k==='brady'?'brady-row':'', cells:[c.comp,c.yds.toLocaleString(),c.td,c.int,c.rate,c.mvp,c.ap1,c.sb,c.sbmvp]};
+  }));
+
+buildTable('playoffTable', ['Quarterback (Playoffs)','Record','Games','Comp%','Yards','TD','INT','Rating'],
+  Object.keys(QBS).map(k=>{
+    const q=QBS[k], p=PLAYOFF[k];
+    return {name:q.name, cls:k==='brady'?'brady-row':'', cells:[p.rec,p.g,p.comp,p.yds.toLocaleString(),p.td,p.int,p.rate]};
+  }));
+
+buildTable('sbTable', ['Quarterback (Super Bowl only)','Appearances','Record','SB MVPs','Rating','Y/Att'],
+  Object.keys(QBS).map(k=>{
+    const q=QBS[k], s=SB[k];
+    return {name:q.name, cls:k==='brady'?'brady-row':'', cells:[s.apps,s.rec,s.mvp,s.rate,s.ypatt]};
+  }));
+
+const STARTS = { brady:333, rodgers:257, mahomes:126, brees:286, manning:265 };
+(function(){
+  const rows = Object.keys(QBS).map(k=>{
+    const q=QBS[k], c=CAREER[k], p=PLAYOFF[k];
+    const regYpg = c.yds/STARTS[k];
+    const playYpg = p.yds/p.g;
+    const rateDelta = p.rate - c.rate;
+    return {
+      name:q.name, cls:k==='brady'?'brady-row':'',
+      cells:[
+        c.rate, p.rate,
+        (rateDelta>=0?'+':'')+rateDelta.toFixed(1),
+        Math.round(regYpg), Math.round(playYpg)
+      ]
+    };
+  });
+  buildTable('splitsTable', ['Quarterback','Reg. Season Rating','Playoff Rating','Rating Change','Reg. Season YPG','Playoff YPG'], rows);
+})();
+
+(function(){
+  const rows = OTHER_GAMES.games.map((g,i)=>({
+    name:g,
+    cls: OTHER_GAMES.result[i]==='L' ? 'loss-row' : '',
+    cells:[
+      OTHER_GAMES.round[i],
+      `<span class="result-pill ${OTHER_GAMES.result[i]==='W'?'win':'loss'}">${OTHER_GAMES.result[i]}</span>`,
+      OTHER_GAMES.score[i],
+      OTHER_GAMES.qbr[i],
+      OTHER_GAMES.yds[i],
+      OTHER_GAMES.td[i],
+      OTHER_GAMES.int[i]
+    ]
+  }));
+  rows.push({
+    name:'Average / total',
+    cls:'avg-row',
+    cells:[
+      'n/a',
+      `${OG_WINS}–${OG_LOSSES}`,
+      'n/a',
+      avg(OTHER_GAMES.qbr).toFixed(1),
+      Math.round(avg(OTHER_GAMES.yds))+' /gm',
+      avg(OTHER_GAMES.td).toFixed(1)+' /gm',
+      avg(OTHER_GAMES.int).toFixed(2)+' /gm'
+    ]
+  });
+  buildTable('otherGamesTable', ['Game','Round','Result','Score','QBR','Yards','TD','INT'], rows);
+})();
+
+const metricGrid = document.getElementById('metricGrid');
+LUCK_METRICS.forEach(([num,txt])=>{
+  metricGrid.appendChild(el('div','metric',`<span class="num">${num}</span><span class="txt">${txt}</span>`));
+});
+
+const teammateGrid = document.getElementById('teammateGrid');
+TEAMMATES.forEach(t=>{
+  const card = el('div','teammate-card');
+  card.innerHTML = `
+    <div class="tm-head"><h4>${t.name}</h4><span class="tm-tag ${t.tag}">${t.tag}</span></div>
+    <div class="role">${t.role} · ${t.years}</div>
+    <p>${t.note}</p>`;
+  teammateGrid.appendChild(card);
+});
+
+const timelineEl = document.getElementById('timeline');
+function renderTimeline(filter){
+  timelineEl.innerHTML = '';
+  const list = filter==='all' ? TIMELINE : TIMELINE.filter(t=>t.tag===filter);
+  list.forEach(item=>{
+    const tagLabel = item.tag==='sb' ? 'Super Bowl' : item.tag==='ccg' ? 'Conf. Championship' : '';
+    const div = el('div','tl-item');
+    div.innerHTML = `
+      <div class="tl-year">${item.year}<div class="dot"></div></div>
+      <div class="tl-body">
+        <h4>${item.title}${tagLabel?`<span class="tag">${tagLabel}</span>`:''}</h4>
+        <div class="score">${item.score}</div>
+        <ul>${item.points.map(p=>`<li>${p}</li>`).join('')}</ul>
+      </div>`;
+    timelineEl.appendChild(div);
+  });
+}
+renderTimeline('all');
+document.querySelectorAll('#luckToggle .toggle-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#luckToggle .toggle-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTimeline(btn.dataset.filter);
+  });
+});
+
+const navLinks = document.querySelectorAll('.tab-link');
+const sections = ['overview','comparison','luck','sources'].map(id=>document.getElementById(id));
+window.addEventListener('scroll', ()=>{
+  let current = sections[0].id;
+  sections.forEach(s=>{ if(window.scrollY >= s.offsetTop - 100) current = s.id; });
+  navLinks.forEach(l=>l.classList.toggle('active', l.getAttribute('href')==='#'+current));
+});
+
+/* ============ CHARTS ============ */
+Chart.defaults.color = '#5B6472';
+Chart.defaults.font.family = "'Inter',sans-serif";
+Chart.defaults.borderColor = 'rgba(16,24,40,0.08)';
+
+function makeChart(id, config){
+  const canvas = document.getElementById(id);
+  try{
+    if (typeof Chart === 'undefined') throw new Error('Chart.js failed to load');
+    config.options = config.options || {};
+    config.options.responsive = true;
+    config.options.maintainAspectRatio = false;
+    return new Chart(canvas, config);
+  }catch(err){
+    const wrap = canvas.closest('.chart-wrap');
+    if(wrap){ wrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#5B6472;font-size:0.85rem;text-align:center;padding:0 20px;">Chart could not load (' + err.message + '). Try refreshing the page.</div>'; }
+    console.error('Chart build failed for', id, err);
+    return null;
+  }
+}
+
+// --- Season line charts ---
+function buildDataset(key, idx){
+  const q = QBS[key];
+  const rows = SEASONS[key];
+  return {
+    label:q.name,
+    data: rows.map(r=>({x:r[0], y:r[idx]})),
+    borderColor:q.color, backgroundColor:q.color,
+    tension:0.25, pointRadius:3, pointHoverRadius:6, spanGaps:true,
+    borderWidth: key==='brady'?3:2
+  };
+}
+const yearAxis = { type:'linear', min:1998, max:2026, ticks:{stepSize:4, callback:v=>v}, grid:{color:'rgba(16,24,40,0.07)'} };
+
+makeChart('yardsChart', {
+  type:'line',
+  data:{ datasets: Object.keys(QBS).map(k=>buildDataset(k,1)) },
+  options:{
+    interaction:{mode:'nearest', intersect:false},
+    plugins:{ legend:{position:'bottom', labels:{boxWidth:10,boxHeight:10,usePointStyle:true}},
+      tooltip:{ callbacks:{ title:(items)=> String(items[0].parsed.x) } } },
+    scales:{ x:yearAxis, y:{title:{display:true,text:'Passing yards'},grid:{color:'rgba(16,24,40,0.07)'}} }
+  }
+});
+
+makeChart('tdChart', {
+  type:'line',
+  data:{ datasets: Object.keys(QBS).map(k=>buildDataset(k,2)) },
+  options:{
+    interaction:{mode:'nearest', intersect:false},
+    plugins:{ legend:{position:'bottom', labels:{boxWidth:10,boxHeight:10,usePointStyle:true}},
+      tooltip:{ callbacks:{ title:(items)=> String(items[0].parsed.x) } } },
+    scales:{ x:yearAxis, y:{title:{display:true,text:'TD passes'},grid:{color:'rgba(16,24,40,0.07)'}} }
+  }
+});
+
+// --- Career bar chart with metric toggle ---
+const barMetricGetters = {
+  yds:  k=>CAREER[k].yds,
+  td:   k=>CAREER[k].td,
+  rate: k=>CAREER[k].rate,
+  sbw:  k=>CAREER[k].sbw,
+  int:  k=>CAREER[k].int,
+  pow:  k=>parseInt(PLAYOFF[k].rec.split('–')[0], 10),
+  mvp:  k=>CAREER[k].mvp
+};
+const barMetricLabels = {
+  yds:'Career passing yards', td:'Career TD passes', rate:'Career passer rating', sbw:'Super Bowl wins',
+  int:'Career interceptions', pow:'Career playoff wins', mvp:'MVP awards'
+};
+
+const careerBarChart = makeChart('careerBarChart', {
+  type:'bar',
+  data:{
+    labels: Object.keys(QBS).map(k=>QBS[k].name),
+    datasets:[{
+      label: barMetricLabels.yds,
+      data: Object.keys(QBS).map(barMetricGetters.yds),
+      backgroundColor: Object.keys(QBS).map(k=>QBS[k].color),
+      borderRadius:6, maxBarThickness:64
+    }]
+  },
+  options:{
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>ctx.formattedValue}} },
+    scales:{ y:{beginAtZero:true, grid:{color:'rgba(16,24,40,0.07)'}, ticks:{precision:0}}, x:{grid:{display:false}} }
+  }
+});
+document.querySelectorAll('#careerToggle .toggle-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#careerToggle .toggle-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    if(!careerBarChart) return;
+    const metric = btn.dataset.metric;
+    careerBarChart.data.datasets[0].data = Object.keys(QBS).map(barMetricGetters[metric]);
+    careerBarChart.data.datasets[0].label = barMetricLabels[metric];
+    careerBarChart.update();
+  });
+});
+
+// --- Radar chart (normalized 0-100 per axis) ---
+const radarKeys = Object.keys(QBS);
+const normalizedByAxis = RADAR_LABELS.map((_,axisIdx)=>{
+  const vals = radarKeys.map(k=>RADAR_RAW[k][axisIdx]);
+  const min = Math.min(...vals), max = Math.max(...vals);
+  return radarKeys.map(k=>{
+    const v = RADAR_RAW[k][axisIdx];
+    return max===min ? 100 : Math.round(((v-min)/(max-min))*70 + 30); // floor at 30 so shapes stay visible
+  });
+});
+makeChart('radarChart', {
+  type:'radar',
+  data:{
+    labels: RADAR_LABELS,
+    datasets: radarKeys.map((k,i)=>({
+      label: QBS[k].name,
+      data: normalizedByAxis.map(axis=>axis[i]),
+      borderColor: QBS[k].color,
+      backgroundColor: QBS[k].color+'22',
+      borderWidth: k==='brady'?3:1.5,
+      pointRadius:3
+    }))
+  },
+  options:{
+    plugins:{ legend:{position:'bottom', labels:{boxWidth:10,boxHeight:10,usePointStyle:true}},
+      tooltip:{callbacks:{ label:(ctx)=>{
+        const raw = RADAR_RAW[radarKeys[ctx.datasetIndex]][ctx.dataIndex];
+        return `${ctx.dataset.label}: ${raw.toFixed(2)}`;
+      }}}
+    },
+    scales:{ r:{ angleLines:{color:'rgba(16,24,40,0.10)'}, grid:{color:'rgba(16,24,40,0.10)'}, pointLabels:{color:'#5B6472',font:{size:11}}, ticks:{display:false} } }
+  }
+});
+
+// --- Defense support chart ---
+makeChart('defenseChart', {
+  type:'bar',
+  data:{
+    labels: DEFENSE_CHART_DATA.map(d=>d.label),
+    datasets:[
+      { label:"Opponent's season scoring avg", data: DEFENSE_CHART_DATA.map(d=>d.seasonAvg), backgroundColor:'#1F8A7688', borderRadius:5, maxBarThickness:40 },
+      { label:"Points allowed in that Super Bowl", data: DEFENSE_CHART_DATA.map(d=>d.allowed), backgroundColor:'#9C7220', borderRadius:5, maxBarThickness:40 }
+    ]
+  },
+  options:{
+    plugins:{ legend:{position:'bottom', labels:{boxWidth:10,boxHeight:10,usePointStyle:true}} },
+    scales:{ y:{beginAtZero:true, title:{display:true,text:'Points'}, grid:{color:'rgba(16,24,40,0.07)'}}, x:{grid:{display:false}} }
+  }
+});
+</script>
+</body>
+</html>
